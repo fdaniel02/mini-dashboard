@@ -29,11 +29,11 @@ const BY_BUIENRADAR_CODE: Record<string, DayAndNight> = {
 
 // Buienradar's icon codes are a letter, doubled for the night variant ("a" sunny, "aa" clear night).
 export function weatherIconName(buienradarCode: string): WeatherIconName {
-    const code = buienradarCode.toLowerCase();
-    const isNight = code.length === 2 && code[0] === code[1];
-    const icons = BY_BUIENRADAR_CODE[code[0]];
-    if (!icons || (code.length > 1 && !isNight)) {
+    const match = /^([a-z])(\1)?$/.exec(buienradarCode.toLowerCase());
+    const icons = match ? BY_BUIENRADAR_CODE[match[1]] : undefined;
+    if (!icons) {
         return "cloud";
     }
+    const isNight = match?.[2] !== undefined;
     return isNight ? icons[1] : icons[0];
 }
