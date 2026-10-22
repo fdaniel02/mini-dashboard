@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     cacheComponents: true,
     partialPrefetching: true,
     images: {
-        remotePatterns: [new URL("https://cdn.weatherapi.com/weather/**")],
+        remotePatterns: [new URL("https://cdn.buienradar.nl/resources/images/icons/weather/**")],
     },
     turbopack: {
         rules: {

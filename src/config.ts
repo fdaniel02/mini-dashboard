@@ -1,6 +1,11 @@
 export const HOME_TIME_ZONE = "Europe/Amsterdam";
 
-export const WEATHER_LOCATION = "Veghel";
+export const WEATHER_STATIONS = [
+    { id: 6375, name: "Volkel" },
+    { id: 6370, name: "Eindhoven" },
+];
+
+export const PRECIPITATION_LOCATION = { name: "Veghel", lat: 51.62, lon: 5.55 };
 
 export const GONG = { minute: 55, firstHour: 9, lastHour: 21 };
 

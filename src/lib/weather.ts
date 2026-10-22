@@ -3,40 +3,51 @@ export interface Weather {
     windKph: number;
     condition: string;
     iconUrl: string;
-    updatedAt: string;
 }
 
-interface WeatherApiCurrent {
-    temp_c?: unknown;
-    wind_kph?: unknown;
-    last_updated_epoch?: unknown;
-    condition?: { text?: unknown; icon?: unknown };
+interface StationMeasurement {
+    stationid?: unknown;
+    temperature?: unknown;
+    windspeed?: unknown;
+    weatherdescription?: unknown;
+    fullIconUrl?: unknown;
 }
 
-export function toWeather(body: unknown): Weather | null {
-    const current = (body as { current?: WeatherApiCurrent } | null)?.current;
-    const temperatureC = current?.temp_c;
-    const windKph = current?.wind_kph;
-    const updatedEpoch = current?.last_updated_epoch;
-    const condition = current?.condition?.text;
-    const icon = current?.condition?.icon;
+function fromStation(station: StationMeasurement | undefined): Weather | null {
+    const temperatureC = station?.temperature;
+    const windMetresPerSecond = station?.windspeed;
+    const condition = station?.weatherdescription;
+    const iconUrl = station?.fullIconUrl;
 
     if (
         typeof temperatureC !== "number" ||
-        typeof windKph !== "number" ||
-        typeof updatedEpoch !== "number" ||
+        typeof windMetresPerSecond !== "number" ||
         typeof condition !== "string" ||
-        typeof icon !== "string" ||
-        !icon.startsWith("//cdn.weatherapi.com/")
+        typeof iconUrl !== "string" ||
+        !iconUrl.startsWith("https://cdn.buienradar.nl/")
     ) {
         return null;
     }
 
     return {
         temperatureC,
-        windKph,
+        windKph: Math.round(windMetresPerSecond * 3.6 * 10) / 10,
         condition,
-        iconUrl: `https:${icon}`,
-        updatedAt: new Date(updatedEpoch * 1000).toISOString(),
+        iconUrl,
     };
+}
+
+export function toWeather(feed: unknown, stationIds: number[]): Weather | null {
+    const stations = (feed as { actual?: { stationmeasurements?: unknown } } | null)?.actual?.stationmeasurements;
+    if (!Array.isArray(stations)) {
+        return null;
+    }
+
+    for (const id of stationIds) {
+        const weather = fromStation(stations.find((station: StationMeasurement) => station?.stationid === id));
+        if (weather) {
+            return weather;
+        }
+    }
+    return null;
 }
