@@ -4,11 +4,11 @@ export default function DateBar({
     now,
     timeZone,
     className = "text-[6vw]",
-}: {
+}: Readonly<{
     now: Date;
     timeZone: string;
     className?: string;
-}) {
+}>) {
     return (
         <div className={`flex justify-between ${className}`}>
             <p>{formatDate(now, timeZone)}</p>

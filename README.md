@@ -68,7 +68,9 @@ npm run dev    # http://localhost:3000
 | `npm run typecheck`                       | TypeScript 7 (`tsc`) |
 | `npm run format` / `npm run format:check` | Prettier             |
 
-CI runs lint, the format check, the typecheck, the tests and the build on every pull request.
+CI runs lint, the format check, the typecheck, the tests (with coverage) and the build on every pull request, and
+analyses the code with [SonarCloud](https://sonarcloud.io/project/overview?id=fdaniel02_mini-dashboard)
+(`sonar-project.properties`).
 
 TypeScript: `typescript` is an alias for `@typescript/typescript6`, because typescript-eslint doesn't support TypeScript
 7 yet; `tsc` itself is TypeScript 7 (`@typescript/native`). See the

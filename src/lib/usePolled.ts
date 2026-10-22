@@ -28,7 +28,7 @@ export function usePolled<T>(url: string): Polled<T> {
             }
         }
 
-        load();
+        void load();
         const interval = setInterval(load, POLL_INTERVAL_MS);
         return () => {
             unmounted = true;
