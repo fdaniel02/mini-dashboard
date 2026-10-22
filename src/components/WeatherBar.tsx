@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { type PrecipitationForecast, precipitationText } from "@/lib/precipitation";
+import { type PrecipitationForecast, precipitationLabel } from "@/lib/precipitation";
 import { useNow } from "@/lib/useNow";
 import { usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
-import { ThermometerIcon, WindIcon } from "./icons";
+import { RainIcon, ThermometerIcon, WindIcon } from "./icons";
 
 export const WEATHER_STALE_AFTER_MS = 30 * 60_000;
 
@@ -11,6 +11,7 @@ export default function WeatherBar() {
     const weather = usePolled<Weather>("/api/weather");
     const precipitation = usePolled<PrecipitationForecast>("/api/precipitation");
     const now = useNow();
+    const rainLabel = precipitation.data && precipitationLabel(precipitation.data);
 
     const dimmedWhenStale = (fetchedAt: number | null) =>
         now !== null && fetchedAt !== null && now.getTime() - fetchedAt > WEATHER_STALE_AFTER_MS ? "opacity-40" : "";
@@ -32,10 +33,11 @@ export default function WeatherBar() {
                     <p className="text-2xl">{weather.data.windKph} km/h</p>
                 </div>
             )}
-            {precipitation.data && (
-                <p className={`ml-8 text-2xl ${dimmedWhenStale(precipitation.fetchedAt)}`}>
-                    {precipitationText(precipitation.data)}
-                </p>
+            {rainLabel && (
+                <div className={`ml-8 flex items-center ${dimmedWhenStale(precipitation.fetchedAt)}`}>
+                    <RainIcon className="mr-1 size-7" />
+                    <p className="text-2xl">{rainLabel}</p>
+                </div>
             )}
             <a href="https://www.buienradar.nl" className="mr-2 ml-auto text-xs opacity-50">
                 Buienradar.nl

@@ -14,9 +14,9 @@ weather and whether precipitation is coming. It runs in Firefox on a Raspberry P
 - Kolkata, New York and UTC, each with its zone abbreviation and UTC offset
 - The current weather: condition, temperature and wind, measured at Buienradar's Volkel station (Eindhoven when Volkel
   has no reading)
-- Precipitation in Veghel in the next hour, from Buienradar's radar forecast: "Precipitation expected at 13:15",
-  "Precipitation expected to stop at 13:20", "This rain never stops" or "No precipitation expected". Below 0.1 mm/h
-  counts as dry.
+- Precipitation in Veghel in the next hour, from Buienradar's radar forecast: a rain icon with the time it starts
+  ("13:15") or, while it's raining, the time it stops ("until 13:20"). Nothing is shown when it stays dry, or when it
+  rains for the whole hour. Below 0.1 mm/h counts as dry.
 - Weather and precipitation are refreshed every 5 minutes. If refreshing fails, the last reading stays and is dimmed
   once it is more than 30 minutes old.
 - A gong at :55 every hour from 09:55 to 21:55, Amsterdam time

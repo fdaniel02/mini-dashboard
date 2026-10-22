@@ -41,15 +41,14 @@ export function summarize(rows: RainRow[]): PrecipitationForecast {
     return wet ? { kind: "starts", at: wet.time } : { kind: "dry" };
 }
 
-export function precipitationText(forecast: PrecipitationForecast): string {
+export function precipitationLabel(forecast: PrecipitationForecast): string | null {
     switch (forecast.kind) {
         case "starts":
-            return `Precipitation expected at ${forecast.at}`;
+            return forecast.at;
         case "stops":
-            return `Precipitation expected to stop at ${forecast.at}`;
+            return `until ${forecast.at}`;
         case "continues":
-            return "This rain never stops";
         case "dry":
-            return "No precipitation expected";
+            return null;
     }
 }

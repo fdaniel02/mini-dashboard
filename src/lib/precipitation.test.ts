@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { mmPerHour, parseRainText, precipitationText, type RainRow, summarize } from "./precipitation";
+import { mmPerHour, parseRainText, precipitationLabel, type RainRow, summarize } from "./precipitation";
 
 function rainText(values: number[], start = "13:00"): string {
     const [hours, minutes] = start.split(":").map(Number);
@@ -79,13 +79,13 @@ describe("summarize", () => {
     });
 });
 
-describe("precipitationText", () => {
+describe("precipitationLabel", () => {
     test.each([
-        [{ kind: "starts", at: "13:15" } as const, "Precipitation expected at 13:15"],
-        [{ kind: "stops", at: "13:20" } as const, "Precipitation expected to stop at 13:20"],
-        [{ kind: "continues" } as const, "This rain never stops"],
-        [{ kind: "dry" } as const, "No precipitation expected"],
-    ])("%o", (forecast, text) => {
-        expect(precipitationText(forecast)).toBe(text);
+        [{ kind: "starts", at: "13:15" } as const, "13:15"],
+        [{ kind: "stops", at: "13:20" } as const, "until 13:20"],
+        [{ kind: "continues" } as const, null],
+        [{ kind: "dry" } as const, null],
+    ])("%o", (forecast, label) => {
+        expect(precipitationLabel(forecast)).toBe(label);
     });
 });

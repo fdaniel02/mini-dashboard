@@ -57,14 +57,14 @@ async function advance(ms: number) {
 test("shows the weather, the precipitation forecast and the source", async () => {
     render(<WeatherBar />);
     expect(screen.queryByText(/°C/)).toBeNull();
-    expect(screen.queryByText(/Precipitation/)).toBeNull();
+    expect(screen.queryByText("13:15")).toBeNull();
 
     await advance(0);
 
     expect(screen.getByText("8.1 °C")).toBeDefined();
     expect(screen.getByText("24.1 km/h")).toBeDefined();
     expect(screen.getByAltText("Lichte regen")).toBeDefined();
-    expect(screen.getByText("Precipitation expected at 13:15")).toBeDefined();
+    expect(screen.getByText("13:15")).toBeDefined();
     expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });
 
@@ -82,7 +82,7 @@ test("shows the forecast when the weather request fails", async () => {
     await advance(0);
 
     expect(screen.queryByText(/°C/)).toBeNull();
-    expect(screen.getByText("Precipitation expected at 13:15")).toBeDefined();
+    expect(screen.getByText("13:15")).toBeDefined();
 });
 
 test("shows the weather when the forecast request fails", async () => {
@@ -91,12 +91,32 @@ test("shows the weather when the forecast request fails", async () => {
     await advance(0);
 
     expect(screen.getByText("8.1 °C")).toBeDefined();
-    expect(screen.queryByText(/Precipitation/)).toBeNull();
+    expect(screen.queryByText("13:15")).toBeNull();
+});
+
+test("shows when ongoing precipitation stops", async () => {
+    respond("/api/precipitation", ok({ kind: "stops", at: "13:20" }));
+    render(<WeatherBar />);
+    await advance(0);
+
+    expect(screen.getByText("until 13:20")).toBeDefined();
+});
+
+test.each([
+    ["dry", { kind: "dry" }],
+    ["raining the whole hour", { kind: "continues" }],
+])("shows no forecast when it's %s", async (_, forecast) => {
+    respond("/api/precipitation", ok(forecast));
+    const { container } = render(<WeatherBar />);
+    await advance(0);
+
+    expect(screen.getByText("8.1 °C")).toBeDefined();
+    expect(container.querySelectorAll("svg")).toHaveLength(2);
 });
 
 test("refreshes both every 5 minutes", async () => {
     respond("/api/weather", ok(weather), ok({ ...weather, temperatureC: 9.4 }));
-    respond("/api/precipitation", ok(startsAt1315), ok({ kind: "dry" }));
+    respond("/api/precipitation", ok(startsAt1315), ok({ kind: "stops", at: "13:40" }));
     render(<WeatherBar />);
     await advance(0);
 
@@ -105,7 +125,7 @@ test("refreshes both every 5 minutes", async () => {
     expect(callsTo("/api/weather")).toBe(2);
     expect(callsTo("/api/precipitation")).toBe(2);
     expect(screen.getByText("9.4 °C")).toBeDefined();
-    expect(screen.getByText("No precipitation expected")).toBeDefined();
+    expect(screen.getByText("until 13:40")).toBeDefined();
 });
 
 test("keeps the last readings when refreshes fail, and dims each once it is stale", async () => {
@@ -114,7 +134,7 @@ test("keeps the last readings when refreshes fail, and dims each once it is stal
     render(<WeatherBar />);
     await advance(0);
     const weatherGroup = () => screen.getByText("8.1 °C").parentElement!;
-    const forecast = () => screen.getByText("Precipitation expected at 13:15");
+    const forecast = () => screen.getByText("13:15").parentElement!;
 
     await advance(POLL_INTERVAL_MS);
     expect(weatherGroup().className).not.toContain("opacity-40");
