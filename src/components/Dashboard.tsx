@@ -4,6 +4,7 @@ import { HOME_TIME_ZONE, SECONDARY_CLOCK_ROWS } from "@/config";
 import { useNow } from "@/lib/useNow";
 import DateBar from "./DateBar";
 import MainClock from "./MainClock";
+import WeatherBar from "./WeatherBar";
 import ZoneClock from "./ZoneClock";
 
 export default function Dashboard() {
@@ -30,6 +31,7 @@ export default function Dashboard() {
                 </div>
                 <div className="w-3/12" />
             </div>
+            <WeatherBar />
         </div>
     );
 }
