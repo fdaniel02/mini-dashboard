@@ -2,6 +2,8 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { GET } from "./route";
 
+vi.mock("next/server", () => ({ connection: () => Promise.resolve() }));
+
 const volkel = {
     stationid: 6375,
     stationname: "Meetstation Volkel",
@@ -22,14 +24,18 @@ const elsewhere = { ...volkel, stationid: 6260, stationname: "Meetstation De Bil
 const feed = (...stations: object[]) => Response.json({ actual: { stationmeasurements: stations } });
 
 const fetchMock = vi.fn<typeof fetch>();
+const errorLog = vi.fn();
 
 beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(console, "error").mockImplementation(errorLog);
 });
 
 afterEach(() => {
     vi.unstubAllGlobals();
     fetchMock.mockReset();
+    errorLog.mockReset();
+    vi.restoreAllMocks();
 });
 
 test("returns the current weather at Volkel", async () => {
@@ -38,6 +44,7 @@ test("returns the current weather at Volkel", async () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
+    expect(errorLog).not.toHaveBeenCalled();
     expect(await response.json()).toEqual({
         temperatureC: 11,
         windKph: 34.6,
@@ -66,6 +73,7 @@ test.each([
     const response = await GET();
 
     expect(response.status).toBe(502);
+    expect(errorLog).toHaveBeenCalledTimes(1);
     expect(await response.json()).toEqual({ error: "No usable station measurement from Buienradar" });
 });
 
@@ -75,6 +83,7 @@ test("fails with 502 when Buienradar returns an error", async () => {
     const response = await GET();
 
     expect(response.status).toBe(502);
+    expect(errorLog).toHaveBeenCalledTimes(1);
     expect(await response.json()).toEqual({ error: "Buienradar returned 500" });
 });
 
@@ -84,5 +93,6 @@ test("fails with 502 when Buienradar can't be reached", async () => {
     const response = await GET();
 
     expect(response.status).toBe(502);
+    expect(errorLog).toHaveBeenCalledTimes(1);
     expect(await response.json()).toEqual({ error: "Buienradar could not be reached" });
 });
