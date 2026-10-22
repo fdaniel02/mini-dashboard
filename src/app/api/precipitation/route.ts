@@ -1,9 +1,8 @@
 import { PRECIPITATION_LOCATION } from "@/config";
 import { parseRainText, summarize } from "@/lib/precipitation";
+import { upstreamFailure } from "@/lib/upstreamFailure";
 
-function upstreamError(error: string) {
-    return Response.json({ error }, { status: 502 });
-}
+const ROUTE = "/api/precipitation";
 
 export async function GET() {
     const url = new URL("https://gps.buienradar.nl/getrr.php");
@@ -16,12 +15,12 @@ export async function GET() {
     try {
         response = await fetch(url, { cache: "no-store" });
     } catch {
-        return upstreamError("Buienradar could not be reached");
+        return upstreamFailure(ROUTE, "Buienradar could not be reached");
     }
     if (!response.ok) {
-        return upstreamError(`Buienradar returned ${response.status}`);
+        return upstreamFailure(ROUTE, `Buienradar returned ${response.status}`, response.status);
     }
 
     const rows = parseRainText(await response.text());
-    return rows ? Response.json(summarize(rows)) : upstreamError("Unexpected response from Buienradar");
+    return rows ? Response.json(summarize(rows)) : upstreamFailure(ROUTE, "Unexpected response from Buienradar");
 }

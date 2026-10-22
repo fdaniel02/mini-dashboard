@@ -29,7 +29,18 @@ The browser has to allow autoplay for the dashboard's address, or the gong stays
 ## Configuration
 
 `src/config.ts`: the home time zone, the other clocks, the weather stations, the precipitation location and the gong
-times. Nothing else: no API keys or environment variables.
+times. No API keys. The only environment variable is the optional `OTEL_EXPORTER_OTLP_ENDPOINT` (see below).
+
+## Observability
+
+- **Traces:** with `OTEL_EXPORTER_OTLP_ENDPOINT` set, the server sends traces over OTLP/HTTP through
+  [`@vercel/otel`](https://www.npmjs.com/package/@vercel/otel) (`src/instrumentation.ts`), as service `mini-dashboard`:
+  one trace per request, with the Buienradar calls as child spans. `/healthz/live` isn't traced, and neither are
+  Next.js' own spans outside a request (`src/lib/telemetry.ts`). Without the variable, nothing is sent.
+- **Logs:** when a Buienradar call fails, the route answers 502 and writes one JSON line to stderr, with the route, the
+  error, Buienradar's status if any and the `trace_id`.
+- In the cluster, the endpoint is the k8s-monitoring Alloy collector, which forwards traces to Grafana Cloud; pod logs
+  reach Grafana Cloud's Loki through the same chart.
 
 ## Data source
 
