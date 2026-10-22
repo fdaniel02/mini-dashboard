@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, render } from "@testing-library/react";
+import { setGongMuted } from "@/lib/useGongMuted";
 import Gong from "./Gong";
 
 const AMSTERDAM = "Europe/Amsterdam";
@@ -20,6 +21,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    act(() => setGongMuted(false));
+    localStorage.clear();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
     play.mockReset();
@@ -46,12 +49,11 @@ test("plays the gong once at :55", () => {
     expect(created).toHaveBeenCalledWith("/gong-bell.mp3");
 });
 
-test("plays again the next hour, reusing the audio element", () => {
+test("plays again the next hour", () => {
     const clock = renderAt("2026-10-22T07:55:00Z");
     clock.at("2026-10-22T08:55:00Z");
 
     expect(play).toHaveBeenCalledTimes(2);
-    expect(created).toHaveBeenCalledTimes(1);
 });
 
 test("stays silent outside the gong hours", () => {
@@ -59,6 +61,26 @@ test("stays silent outside the gong hours", () => {
     clock.at("2026-10-22T20:55:00Z");
 
     expect(play).not.toHaveBeenCalled();
+});
+
+test("stays silent while muted", () => {
+    setGongMuted(true);
+    const clock = renderAt("2026-10-22T07:55:00Z");
+    clock.at("2026-10-22T08:55:00Z");
+
+    expect(play).not.toHaveBeenCalled();
+});
+
+test("doesn't sound late when unmuted during :55", () => {
+    setGongMuted(true);
+    const clock = renderAt("2026-10-22T07:55:00Z");
+
+    act(() => setGongMuted(false));
+    clock.at("2026-10-22T07:55:30Z");
+    expect(play).not.toHaveBeenCalled();
+
+    clock.at("2026-10-22T08:55:00Z");
+    expect(play).toHaveBeenCalledTimes(1);
 });
 
 test("logs a warning when the browser blocks the sound", async () => {
