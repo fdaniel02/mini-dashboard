@@ -5,10 +5,15 @@ import Dashboard from "./Dashboard";
 beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-22T10:00:00Z"));
+    vi.stubGlobal(
+        "fetch",
+        vi.fn(() => new Promise(() => {})),
+    );
 });
 
 afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
 });
 
 test("shows the date bar and all clocks", () => {
@@ -52,9 +57,9 @@ test("rolls the date over at midnight in Amsterdam", () => {
     expect(screen.getByText("00:00:00")).toBeDefined();
 });
 
-test("stops its timer when unmounted", () => {
+test("stops its timers when unmounted", () => {
     const { unmount } = render(<Dashboard />);
-    expect(vi.getTimerCount()).toBe(1);
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
 
     unmount();
     expect(vi.getTimerCount()).toBe(0);
