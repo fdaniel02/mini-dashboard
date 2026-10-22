@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Roboto_Mono } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const robotoMono = Roboto_Mono({
-    variable: "--font-roboto-mono",
+const ibmPlexMono = IBM_Plex_Mono({
+    variable: "--font-ibm-plex-mono",
     subsets: ["latin"],
-    weight: "500",
+    weight: "700",
 });
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
     return (
-        <html lang="en" className={`${robotoMono.variable} h-full antialiased`}>
+        <html lang="en" className={`${ibmPlexMono.variable} h-full antialiased`}>
             <body className="flex min-h-full flex-col px-4">{children}</body>
         </html>
     );
