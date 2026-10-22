@@ -3,13 +3,14 @@ import { act, render, screen } from "@testing-library/react";
 import type { PrecipitationForecast } from "@/lib/precipitation";
 import { POLL_INTERVAL_MS } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
+import { WEATHER_ICON_PATHS } from "@/lib/weatherIconPaths";
 import WeatherBar, { WEATHER_STALE_AFTER_MS } from "./WeatherBar";
 
 const weather: Weather = {
     temperatureC: 8.1,
     windKph: 24.1,
     condition: "Lichte regen",
-    iconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/F.png",
+    iconCode: "f",
 };
 const startsAt1315: PrecipitationForecast = { kind: "starts", at: "13:15" };
 
@@ -63,7 +64,8 @@ test("shows the weather, the precipitation forecast and the source", async () =>
 
     expect(screen.getByText("8.1 °C")).toBeDefined();
     expect(screen.getByText("24.1 km/h")).toBeDefined();
-    expect(screen.getByAltText("Lichte regen")).toBeDefined();
+    const icon = screen.getByRole("img", { name: "Lichte regen" });
+    expect(icon.querySelector("path")?.getAttribute("d")).toBe(WEATHER_ICON_PATHS.rainy_light);
     expect(screen.getByText("13:15")).toBeDefined();
     expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });

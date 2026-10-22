@@ -10,7 +10,7 @@ const volkel = {
     temperature: 11,
     windspeed: 9.6,
     weatherdescription: "Zwaar bewolkt",
-    fullIconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/C.png",
+    iconurl: "https://cdn.buienradar.nl/resources/images/icons/weather/30x30/c.png",
 };
 const eindhoven = {
     ...volkel,
@@ -49,7 +49,7 @@ test("returns the current weather at Volkel", async () => {
         temperatureC: 11,
         windKph: 34.6,
         condition: "Zwaar bewolkt",
-        iconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/C.png",
+        iconCode: "c",
     });
     expect(String(fetchMock.mock.calls[0][0])).toBe("https://data.buienradar.nl/2.0/feed/json");
 });
@@ -63,10 +63,23 @@ test("falls back to Eindhoven when Volkel's reading is incomplete", async () => 
 });
 
 test.each([
+    ["the night variant", "https://cdn.buienradar.nl/resources/images/icons/weather/30x30/cc.png", "cc"],
+    ["an upper-case file name", "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/Q.png", "q"],
+    ["an unexpected file name", "https://cdn.buienradar.nl/resources/images/icons/weather/30x30/new-icon.png", ""],
+    ["no icon", undefined, ""],
+])("takes the icon code from the icon's file name: %s", async (_, iconurl, iconCode) => {
+    fetchMock.mockResolvedValue(feed({ ...volkel, iconurl }));
+
+    const response = await GET();
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ iconCode });
+});
+
+test.each([
     ["no configured station", feed(elsewhere)],
     ["no stations at all", Response.json({ actual: {} })],
     ["a body that isn't JSON", new Response("<html>")],
-    ["an icon from another host", feed({ ...volkel, fullIconUrl: "https://evil.example/x.png" })],
 ])("fails with 502 on %s", async (_, upstreamResponse) => {
     fetchMock.mockResolvedValue(upstreamResponse);
 
