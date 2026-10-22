@@ -19,7 +19,8 @@ weather and whether precipitation is coming. It runs in Firefox on a Raspberry P
   rains for the whole hour. Below 0.1 mm/h counts as dry.
 - Weather and precipitation are refreshed every 5 minutes. If refreshing fails, the last reading stays and is dimmed
   once it is more than 30 minutes old.
-- A gong at :55 every hour from 09:55 to 21:55, Amsterdam time
+- A gong at :55 every hour from 09:55 to 21:55, Amsterdam time. The speaker button at the right end of the weather bar
+  mutes it until it's tapped again (which plays the gong); the state is kept in the browser's `localStorage`.
 
 **`/clock`**: just the date and a full-screen Amsterdam clock.
 

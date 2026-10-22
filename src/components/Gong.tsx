@@ -1,20 +1,24 @@
 import { useEffect, useRef } from "react";
 import { gongSlot } from "@/lib/gong";
+import { playGong } from "@/lib/gongSound";
+import { useGongMuted } from "@/lib/useGongMuted";
 
 export default function Gong({ now, timeZone }: { now: Date; timeZone: string }) {
     const slot = gongSlot(now, timeZone);
+    const muted = useGongMuted();
     // Tracks what has played, not just the effect's dependency, because StrictMode runs effects twice in development.
+    // A muted slot counts as handled too, so unmuting during :55 doesn't sound it late.
     const playedSlot = useRef<string | null>(null);
-    const audio = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         if (!slot || slot === playedSlot.current) {
             return;
         }
         playedSlot.current = slot;
-        audio.current ??= new Audio("/gong-bell.mp3");
-        audio.current.play().catch((error: unknown) => console.warn("The gong could not play", error));
-    }, [slot]);
+        if (!muted) {
+            playGong();
+        }
+    }, [slot, muted]);
 
     return null;
 }

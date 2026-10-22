@@ -4,6 +4,7 @@ import { useNow } from "@/lib/useNow";
 import { usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
 import { RainIcon, ThermometerIcon, WindIcon } from "./icons";
+import MuteButton from "./MuteButton";
 
 export const WEATHER_STALE_AFTER_MS = 30 * 60_000;
 
@@ -42,6 +43,7 @@ export default function WeatherBar() {
             <a href="https://www.buienradar.nl" className="mt-1 ml-1.5 self-start text-xs opacity-50">
                 Buienradar.nl
             </a>
+            <MuteButton />
         </div>
     );
 }

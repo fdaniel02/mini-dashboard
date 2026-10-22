@@ -76,6 +76,9 @@ test("puts the credit right after the last item, leaving the right side of the b
 
     expect(screen.getByText("13:15").parentElement!.nextElementSibling).toBe(credit);
     expect(credit.className).not.toContain("ml-auto");
+    const muteButton = screen.getByRole("button", { name: "Mute the gong" });
+    expect(credit.nextElementSibling).toBe(muteButton);
+    expect(muteButton.className).toContain("ml-auto");
 
     await advance(POLL_INTERVAL_MS);
     expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(credit);
@@ -120,11 +123,12 @@ test.each([
     ["raining the whole hour", { kind: "continues" }],
 ])("shows no forecast when it's %s", async (_, forecast) => {
     respond("/api/precipitation", ok(forecast));
-    const { container } = render(<WeatherBar />);
+    render(<WeatherBar />);
     await advance(0);
 
-    expect(screen.getByText("8.1 °C")).toBeDefined();
-    expect(container.querySelectorAll("svg")).toHaveLength(2);
+    expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(
+        screen.getByRole("link", { name: "Buienradar.nl" }),
+    );
 });
 
 test("refreshes both every 5 minutes", async () => {
