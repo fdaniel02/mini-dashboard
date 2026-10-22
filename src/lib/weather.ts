@@ -2,7 +2,7 @@ export interface Weather {
     temperatureC: number;
     windKph: number;
     condition: string;
-    iconUrl: string;
+    iconCode: string;
 }
 
 interface StationMeasurement {
@@ -10,22 +10,20 @@ interface StationMeasurement {
     temperature?: unknown;
     windspeed?: unknown;
     weatherdescription?: unknown;
-    fullIconUrl?: unknown;
+    iconurl?: unknown;
+}
+
+// The code is the icon's file name: ".../weather/30x30/cc.png" -> "cc".
+function iconCodeOf(iconUrl: unknown): string {
+    return typeof iconUrl === "string" ? (/\/([a-z]{1,2})\.png$/i.exec(iconUrl)?.[1]?.toLowerCase() ?? "") : "";
 }
 
 function fromStation(station: StationMeasurement | undefined): Weather | null {
     const temperatureC = station?.temperature;
     const windMetresPerSecond = station?.windspeed;
     const condition = station?.weatherdescription;
-    const iconUrl = station?.fullIconUrl;
 
-    if (
-        typeof temperatureC !== "number" ||
-        typeof windMetresPerSecond !== "number" ||
-        typeof condition !== "string" ||
-        typeof iconUrl !== "string" ||
-        !iconUrl.startsWith("https://cdn.buienradar.nl/")
-    ) {
+    if (typeof temperatureC !== "number" || typeof windMetresPerSecond !== "number" || typeof condition !== "string") {
         return null;
     }
 
@@ -33,7 +31,7 @@ function fromStation(station: StationMeasurement | undefined): Weather | null {
         temperatureC,
         windKph: Math.round(windMetresPerSecond * 3.6 * 10) / 10,
         condition,
-        iconUrl,
+        iconCode: iconCodeOf(station?.iconurl),
     };
 }
 

@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { type PrecipitationForecast, precipitationLabel } from "@/lib/precipitation";
 import { useNow } from "@/lib/useNow";
 import { usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
 import { RainIcon, ThermometerIcon, WindIcon } from "./icons";
 import MuteButton from "./MuteButton";
+import WeatherIcon from "./WeatherIcon";
 
 export const WEATHER_STALE_AFTER_MS = 30 * 60_000;
 
@@ -21,12 +21,10 @@ export default function WeatherBar() {
         <div className="-mx-4 flex h-11 items-center bg-black">
             {weather.data && (
                 <div className={`flex items-center ${dimmedWhenStale(weather.fetchedAt)}`}>
-                    <Image
-                        src={weather.data.iconUrl}
-                        alt={weather.data.condition}
-                        title={weather.data.condition}
-                        width={44}
-                        height={44}
+                    <WeatherIcon
+                        code={weather.data.iconCode}
+                        label={weather.data.condition}
+                        className="mr-2 ml-1 size-9"
                     />
                     <ThermometerIcon className="mr-1 size-6" />
                     <p className="mr-5 text-2xl">{weather.data.temperatureC} °C</p>
