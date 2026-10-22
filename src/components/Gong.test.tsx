@@ -56,7 +56,7 @@ test("plays again the next hour, reusing the audio element", () => {
 
 test("stays silent outside the gong hours", () => {
     const clock = renderAt("2026-10-22T06:55:00Z");
-    clock.at("2026-10-22T21:55:00Z");
+    clock.at("2026-10-22T20:55:00Z");
 
     expect(play).not.toHaveBeenCalled();
 });

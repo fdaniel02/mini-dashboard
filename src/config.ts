@@ -2,7 +2,7 @@ export const HOME_TIME_ZONE = "Europe/Amsterdam";
 
 export const WEATHER_LOCATION = "Veghel";
 
-export const GONG = { minute: 55, firstHour: 9, lastHour: 22 };
+export const GONG = { minute: 55, firstHour: 9, lastHour: 21 };
 
 export interface ZoneClockConfig {
     timeZone: string;
