@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { WEATHER_STATIONS } from "@/config";
 import { upstreamFailure } from "@/lib/upstreamFailure";
 import { toWeather } from "@/lib/weather";
@@ -5,6 +6,10 @@ import { toWeather } from "@/lib/weather";
 const ROUTE = "/api/weather";
 
 export async function GET() {
+    // Without this, the build starts the handler to try prerendering it and aborts its fetch, which would log a false
+    // Buienradar failure.
+    await connection();
+
     let response: Response;
     try {
         response = await fetch("https://data.buienradar.nl/2.0/feed/json", { cache: "no-store" });

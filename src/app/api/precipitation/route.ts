@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { PRECIPITATION_LOCATION } from "@/config";
 import { parseRainText, summarize } from "@/lib/precipitation";
 import { upstreamFailure } from "@/lib/upstreamFailure";
@@ -5,6 +6,10 @@ import { upstreamFailure } from "@/lib/upstreamFailure";
 const ROUTE = "/api/precipitation";
 
 export async function GET() {
+    // Without this, the build starts the handler to try prerendering it and aborts its fetch, which would log a false
+    // Buienradar failure.
+    await connection();
+
     const url = new URL("https://gps.buienradar.nl/getrr.php");
     url.search = new URLSearchParams({
         lat: String(PRECIPITATION_LOCATION.lat),

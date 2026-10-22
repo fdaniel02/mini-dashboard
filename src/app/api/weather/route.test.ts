@@ -2,6 +2,8 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { GET } from "./route";
 
+vi.mock("next/server", () => ({ connection: () => Promise.resolve() }));
+
 const volkel = {
     stationid: 6375,
     stationname: "Meetstation Volkel",
