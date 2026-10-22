@@ -3,7 +3,7 @@ import { gongSlot } from "@/lib/gong";
 import { playGong } from "@/lib/gongSound";
 import { useGongMuted } from "@/lib/useGongMuted";
 
-export default function Gong({ now, timeZone }: { now: Date; timeZone: string }) {
+export default function Gong({ now, timeZone }: Readonly<{ now: Date; timeZone: string }>) {
     const slot = gongSlot(now, timeZone);
     const muted = useGongMuted();
     // Tracks what has played, not just the effect's dependency, because StrictMode runs effects twice in development.
