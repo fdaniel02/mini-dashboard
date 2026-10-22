@@ -2,6 +2,8 @@ export const HOME_TIME_ZONE = "Europe/Amsterdam";
 
 export const WEATHER_LOCATION = "Veghel";
 
+export const GONG = { minute: 55, firstHour: 9, lastHour: 22 };
+
 export interface ZoneClockConfig {
     timeZone: string;
     // Intl only gives a zone's abbreviation (IST, EDT) in a locale where it's used; elsewhere it falls back to GMT+5:30.

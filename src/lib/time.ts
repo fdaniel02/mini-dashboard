@@ -10,9 +10,16 @@ function formatParts(
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
 }
 
-function zonedDate(date: Date, timeZone: string) {
-    const { year, month, day } = formatParts(date, timeZone, { year: "numeric", month: "2-digit", day: "2-digit" });
-    return { year: Number(year), month: Number(month), day: Number(day) };
+export function zonedDateTime(date: Date, timeZone: string) {
+    const { year, month, day, hour, minute } = formatParts(date, timeZone, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    });
+    return { year: Number(year), month: Number(month), day: Number(day), hour: Number(hour), minute: Number(minute) };
 }
 
 export function formatDate(date: Date, timeZone: string): string {
@@ -36,7 +43,7 @@ export function formatTime(date: Date, timeZone: string, { seconds = false } = {
 }
 
 export function isoWeek(date: Date, timeZone: string): number {
-    const { year, month, day } = zonedDate(date, timeZone);
+    const { year, month, day } = zonedDateTime(date, timeZone);
     const thursday = new Date(Date.UTC(year, month - 1, day));
     const isoWeekday = thursday.getUTCDay() || 7;
     thursday.setUTCDate(thursday.getUTCDate() + 4 - isoWeekday);

@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { HOME_TIME_ZONE, SECONDARY_CLOCK_ROWS } from "@/config";
 import { useNow } from "@/lib/useNow";
 import DateBar from "./DateBar";
+import Gong from "./Gong";
 import MainClock from "./MainClock";
 import WeatherBar from "./WeatherBar";
 import ZoneClock from "./ZoneClock";
@@ -15,6 +17,7 @@ export default function Dashboard() {
 
     return (
         <div className="flex h-screen grow flex-col justify-between font-bold">
+            <Gong now={now} timeZone={HOME_TIME_ZONE} />
             <DateBar now={now} timeZone={HOME_TIME_ZONE} />
             <div className="mb-auto flex justify-between">
                 <div className="grow font-mono">
@@ -30,6 +33,9 @@ export default function Dashboard() {
                     ))}
                 </div>
                 <div className="w-3/12" />
+            </div>
+            <div className="flex justify-end">
+                <Image src="/cat.png" alt="cat" width={165} height={116} className="-mt-28" />
             </div>
             <WeatherBar />
         </div>
