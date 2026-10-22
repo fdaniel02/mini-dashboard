@@ -39,7 +39,7 @@ export default function WeatherBar() {
                     <p className="text-2xl">{rainLabel}</p>
                 </div>
             )}
-            <a href="https://www.buienradar.nl" className="mr-2 ml-auto text-xs opacity-50">
+            <a href="https://www.buienradar.nl" className="mt-1 ml-1.5 self-start text-xs opacity-50">
                 Buienradar.nl
             </a>
         </div>

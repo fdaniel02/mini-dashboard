@@ -68,6 +68,19 @@ test("shows the weather, the precipitation forecast and the source", async () =>
     expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });
 
+test("puts the credit right after the last item, leaving the right side of the bar free", async () => {
+    respond("/api/precipitation", ok(startsAt1315), ok({ kind: "dry" }));
+    render(<WeatherBar />);
+    await advance(0);
+    const credit = screen.getByRole("link", { name: "Buienradar.nl" });
+
+    expect(screen.getByText("13:15").parentElement!.nextElementSibling).toBe(credit);
+    expect(credit.className).not.toContain("ml-auto");
+
+    await advance(POLL_INTERVAL_MS);
+    expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(credit);
+});
+
 test("credits the source even before any data has loaded", () => {
     respond("/api/weather", failing);
     respond("/api/precipitation", failing);
