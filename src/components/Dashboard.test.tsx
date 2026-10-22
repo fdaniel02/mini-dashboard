@@ -66,3 +66,13 @@ test("stops its timers when unmounted", () => {
     unmount();
     expect(vi.getTimerCount()).toBe(0);
 });
+
+test("plays the gong at :55 and keeps rendering", () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play");
+    vi.setSystemTime(new Date("2026-10-22T07:55:00Z"));
+
+    render(<Dashboard />);
+
+    expect(screen.getByText("09:55:00")).toBeDefined();
+    expect(play).toHaveBeenCalledTimes(1);
+});
