@@ -68,6 +68,10 @@ docker run -p 3000:3000 -e WEATHER_API_KEY=<key> mini-dashboard
 
 ## Deployment
 
+CI builds the image on every pull request and scans it with Trivy (it fails on critical vulnerabilities that have a
+fix). Every push to `main` publishes that scanned image as `ghcr.io/fdaniel02/mini-dashboard`, tagged `latest` and
+`sha-<commit>`.
+
 The dashboard is moving from Docker on srv-02 to the k3s homelab cluster, deployed by Argo CD from
 [cluster-gitops](https://github.com/fdaniel02/cluster-gitops), with the image on GHCR and the API key in a sealed
 secret.
