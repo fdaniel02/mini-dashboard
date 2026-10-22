@@ -1,4 +1,4 @@
-import { WEATHER_LOCATION } from "@/config";
+import { WEATHER_STATIONS } from "@/config";
 import { toWeather } from "@/lib/weather";
 
 function upstreamError(error: string) {
@@ -6,24 +6,19 @@ function upstreamError(error: string) {
 }
 
 export async function GET() {
-    const apiKey = process.env.WEATHER_API_KEY;
-    if (!apiKey) {
-        return Response.json({ error: "WEATHER_API_KEY is not set" }, { status: 500 });
-    }
-
-    const url = new URL("https://api.weatherapi.com/v1/current.json");
-    url.search = new URLSearchParams({ key: apiKey, q: WEATHER_LOCATION, aqi: "no" }).toString();
-
     let response: Response;
     try {
-        response = await fetch(url, { cache: "no-store" });
+        response = await fetch("https://data.buienradar.nl/2.0/feed/json", { cache: "no-store" });
     } catch {
-        return upstreamError("weatherapi.com could not be reached");
+        return upstreamError("Buienradar could not be reached");
     }
     if (!response.ok) {
-        return upstreamError(`weatherapi.com returned ${response.status}`);
+        return upstreamError(`Buienradar returned ${response.status}`);
     }
 
-    const weather = toWeather(await response.json().catch(() => null));
-    return weather ? Response.json(weather) : upstreamError("Unexpected response from weatherapi.com");
+    const weather = toWeather(
+        await response.json().catch(() => null),
+        WEATHER_STATIONS.map((station) => station.id),
+    );
+    return weather ? Response.json(weather) : upstreamError("No usable station measurement from Buienradar");
 }

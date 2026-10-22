@@ -2,97 +2,87 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { GET } from "./route";
 
-const upstreamBody = {
-    current: {
-        temp_c: 8.1,
-        wind_kph: 24.1,
-        last_updated_epoch: 1792653900,
-        condition: { text: "Light rain", icon: "//cdn.weatherapi.com/weather/64x64/day/296.png" },
-    },
+const volkel = {
+    stationid: 6375,
+    stationname: "Meetstation Volkel",
+    temperature: 11,
+    windspeed: 9.6,
+    weatherdescription: "Zwaar bewolkt",
+    fullIconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/C.png",
 };
+const eindhoven = {
+    ...volkel,
+    stationid: 6370,
+    stationname: "Meetstation Eindhoven",
+    temperature: 11.4,
+    windspeed: 7.3,
+};
+const elsewhere = { ...volkel, stationid: 6260, stationname: "Meetstation De Bilt", temperature: 9 };
+
+const feed = (...stations: object[]) => Response.json({ actual: { stationmeasurements: stations } });
 
 const fetchMock = vi.fn<typeof fetch>();
 
 beforeEach(() => {
-    vi.stubEnv("WEATHER_API_KEY", "test-key");
     vi.stubGlobal("fetch", fetchMock);
 });
 
 afterEach(() => {
-    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
     fetchMock.mockReset();
 });
 
-test("returns the current weather for the configured location", async () => {
-    fetchMock.mockResolvedValue(Response.json(upstreamBody));
+test("returns the current weather at Volkel", async () => {
+    fetchMock.mockResolvedValue(feed(elsewhere, eindhoven, volkel));
 
     const response = await GET();
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-        temperatureC: 8.1,
-        windKph: 24.1,
-        condition: "Light rain",
-        iconUrl: "https://cdn.weatherapi.com/weather/64x64/day/296.png",
-        updatedAt: "2026-10-22T07:25:00.000Z",
+        temperatureC: 11,
+        windKph: 34.6,
+        condition: "Zwaar bewolkt",
+        iconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/C.png",
     });
-    const url = new URL(String(fetchMock.mock.calls[0][0]));
-    expect(url.origin + url.pathname).toBe("https://api.weatherapi.com/v1/current.json");
-    expect(url.searchParams.get("key")).toBe("test-key");
-    expect(url.searchParams.get("q")).toBe("Veghel");
+    expect(String(fetchMock.mock.calls[0][0])).toBe("https://data.buienradar.nl/2.0/feed/json");
 });
 
-test("fails with 500 when the API key is missing", async () => {
-    vi.stubEnv("WEATHER_API_KEY", "");
+test("falls back to Eindhoven when Volkel's reading is incomplete", async () => {
+    fetchMock.mockResolvedValue(feed({ ...volkel, temperature: undefined }, eindhoven));
 
     const response = await GET();
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: "WEATHER_API_KEY is not set" });
-    expect(fetchMock).not.toHaveBeenCalled();
-});
-
-test("fails with 502 when weatherapi.com returns an error", async () => {
-    fetchMock.mockResolvedValue(Response.json({ error: { message: "API key is invalid." } }, { status: 403 }));
-
-    const response = await GET();
-
-    expect(response.status).toBe(502);
-    expect(await response.json()).toEqual({ error: "weatherapi.com returned 403" });
-});
-
-test("fails with 502 when weatherapi.com can't be reached", async () => {
-    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
-
-    const response = await GET();
-
-    expect(response.status).toBe(502);
-    expect(await response.json()).toEqual({ error: "weatherapi.com could not be reached" });
+    expect(await response.json()).toMatchObject({ temperatureC: 11.4, windKph: 26.3 });
 });
 
 test.each([
+    ["no configured station", feed(elsewhere)],
+    ["no stations at all", Response.json({ actual: {} })],
     ["a body that isn't JSON", new Response("<html>")],
-    ["missing fields", Response.json({ current: { temp_c: 8.1 } })],
-    [
-        "an icon from another host",
-        Response.json({
-            current: { ...upstreamBody.current, condition: { text: "Sunny", icon: "//evil.example/x.png" } },
-        }),
-    ],
+    ["an icon from another host", feed({ ...volkel, fullIconUrl: "https://evil.example/x.png" })],
 ])("fails with 502 on %s", async (_, upstreamResponse) => {
     fetchMock.mockResolvedValue(upstreamResponse);
 
     const response = await GET();
 
     expect(response.status).toBe(502);
-    expect(await response.json()).toEqual({ error: "Unexpected response from weatherapi.com" });
+    expect(await response.json()).toEqual({ error: "No usable station measurement from Buienradar" });
 });
 
-test("never sends the API key to the browser", async () => {
-    fetchMock.mockResolvedValue(Response.json({}, { status: 401 }));
+test("fails with 502 when Buienradar returns an error", async () => {
+    fetchMock.mockResolvedValue(new Response("", { status: 500 }));
 
     const response = await GET();
 
-    expect(await response.text()).not.toContain("test-key");
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "Buienradar returned 500" });
+});
+
+test("fails with 502 when Buienradar can't be reached", async () => {
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
+
+    const response = await GET();
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "Buienradar could not be reached" });
 });

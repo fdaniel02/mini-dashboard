@@ -1,36 +1,52 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
+import type { PrecipitationForecast } from "@/lib/precipitation";
+import { POLL_INTERVAL_MS } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
-import { WEATHER_REFRESH_MS } from "@/lib/useWeather";
 import WeatherBar, { WEATHER_STALE_AFTER_MS } from "./WeatherBar";
 
 const weather: Weather = {
     temperatureC: 8.1,
     windKph: 24.1,
-    condition: "Light rain",
-    iconUrl: "https://cdn.weatherapi.com/weather/64x64/day/296.png",
-    updatedAt: "2026-10-22T07:25:00.000Z",
+    condition: "Lichte regen",
+    iconUrl: "https://cdn.buienradar.nl/resources/images/icons/weather/96x96/F.png",
 };
+const startsAt1315: PrecipitationForecast = { kind: "starts", at: "13:15" };
 
-const fetchMock = vi.fn<typeof fetch>();
+type Reply = () => Promise<Response>;
+const ok =
+    (body: unknown): Reply =>
+    () =>
+        Promise.resolve(Response.json(body));
+const failing: Reply = () => Promise.reject(new TypeError("fetch failed"));
+const error: Reply = () => Promise.resolve(Response.json({ error: "Buienradar returned 503" }, { status: 503 }));
+
+const replies: Record<string, Reply[]> = {};
+const fetchMock = vi.fn<typeof fetch>((input) => {
+    const queue = replies[String(input)];
+    const reply = queue.length > 1 ? queue.shift()! : queue[0];
+    return reply();
+});
+
+function respond(url: "/api/weather" | "/api/precipitation", ...queue: Reply[]) {
+    replies[url] = queue;
+}
+
+const callsTo = (url: string) => fetchMock.mock.calls.filter(([input]) => String(input) === url).length;
 
 beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-22T10:00:00Z"));
     vi.stubGlobal("fetch", fetchMock);
+    respond("/api/weather", ok(weather));
+    respond("/api/precipitation", ok(startsAt1315));
 });
 
 afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
-    fetchMock.mockReset();
+    fetchMock.mockClear();
 });
-
-async function flushFetch() {
-    await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-    });
-}
 
 async function advance(ms: number) {
     await act(async () => {
@@ -38,63 +54,85 @@ async function advance(ms: number) {
     });
 }
 
-test("shows the weather once it has loaded", async () => {
-    fetchMock.mockResolvedValue(Response.json(weather));
+test("shows the weather, the precipitation forecast and the source", async () => {
     render(<WeatherBar />);
     expect(screen.queryByText(/°C/)).toBeNull();
+    expect(screen.queryByText(/Precipitation/)).toBeNull();
 
-    await flushFetch();
+    await advance(0);
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/weather");
     expect(screen.getByText("8.1 °C")).toBeDefined();
     expect(screen.getByText("24.1 km/h")).toBeDefined();
-    expect(screen.getByAltText("Light rain")).toBeDefined();
+    expect(screen.getByAltText("Lichte regen")).toBeDefined();
+    expect(screen.getByText("Precipitation expected at 13:15")).toBeDefined();
+    expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });
 
-test("shows nothing while the first request fails", async () => {
-    fetchMock.mockResolvedValue(Response.json({ error: "WEATHER_API_KEY is not set" }, { status: 500 }));
+test("credits the source even before any data has loaded", () => {
+    respond("/api/weather", failing);
+    respond("/api/precipitation", failing);
     render(<WeatherBar />);
 
-    await flushFetch();
+    expect(screen.getByRole("link", { name: "Buienradar.nl" })).toBeDefined();
+});
+
+test("shows the forecast when the weather request fails", async () => {
+    respond("/api/weather", error);
+    render(<WeatherBar />);
+    await advance(0);
 
     expect(screen.queryByText(/°C/)).toBeNull();
+    expect(screen.getByText("Precipitation expected at 13:15")).toBeDefined();
 });
 
-test("refreshes every 5 minutes", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json(weather));
-    fetchMock.mockResolvedValueOnce(Response.json({ ...weather, temperatureC: 9.4 }));
+test("shows the weather when the forecast request fails", async () => {
+    respond("/api/precipitation", failing);
     render(<WeatherBar />);
-    await flushFetch();
+    await advance(0);
 
-    await advance(WEATHER_REFRESH_MS);
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(screen.getByText("9.4 °C")).toBeDefined();
+    expect(screen.getByText("8.1 °C")).toBeDefined();
+    expect(screen.queryByText(/Precipitation/)).toBeNull();
 });
 
-test("keeps the last reading when a refresh fails, and dims it once it is stale", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json(weather));
-    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
-    const { container } = render(<WeatherBar />);
-    await flushFetch();
+test("refreshes both every 5 minutes", async () => {
+    respond("/api/weather", ok(weather), ok({ ...weather, temperatureC: 9.4 }));
+    respond("/api/precipitation", ok(startsAt1315), ok({ kind: "dry" }));
+    render(<WeatherBar />);
+    await advance(0);
 
-    await advance(WEATHER_REFRESH_MS);
-    expect(screen.getByText("8.1 °C")).toBeDefined();
-    expect(container.firstElementChild?.className).not.toContain("opacity-40");
+    await advance(POLL_INTERVAL_MS);
+
+    expect(callsTo("/api/weather")).toBe(2);
+    expect(callsTo("/api/precipitation")).toBe(2);
+    expect(screen.getByText("9.4 °C")).toBeDefined();
+    expect(screen.getByText("No precipitation expected")).toBeDefined();
+});
+
+test("keeps the last readings when refreshes fail, and dims each once it is stale", async () => {
+    respond("/api/weather", ok(weather), failing);
+    respond("/api/precipitation", ok(startsAt1315), failing);
+    render(<WeatherBar />);
+    await advance(0);
+    const weatherGroup = () => screen.getByText("8.1 °C").parentElement!;
+    const forecast = () => screen.getByText("Precipitation expected at 13:15");
+
+    await advance(POLL_INTERVAL_MS);
+    expect(weatherGroup().className).not.toContain("opacity-40");
+    expect(forecast().className).not.toContain("opacity-40");
 
     await advance(WEATHER_STALE_AFTER_MS);
-    expect(screen.getByText("8.1 °C")).toBeDefined();
-    expect(container.firstElementChild?.className).toContain("opacity-40");
+    expect(weatherGroup().className).toContain("opacity-40");
+    expect(forecast().className).toContain("opacity-40");
 });
 
 test("stops refreshing when unmounted", async () => {
-    fetchMock.mockResolvedValue(Response.json(weather));
     const { unmount } = render(<WeatherBar />);
-    await flushFetch();
+    await advance(0);
 
     unmount();
-    await advance(WEATHER_REFRESH_MS * 3);
+    await advance(POLL_INTERVAL_MS * 3);
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(callsTo("/api/weather")).toBe(1);
+    expect(callsTo("/api/precipitation")).toBe(1);
     expect(vi.getTimerCount()).toBe(0);
 });

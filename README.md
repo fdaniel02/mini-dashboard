@@ -1,7 +1,7 @@
 # Mini Dashboard
 
-A full-screen wall dashboard: the time in Amsterdam and the team's other time zones, the date and ISO week, and the
-current weather. It runs in Firefox on a Raspberry Pi screen.
+A full-screen wall dashboard: the time in Amsterdam and the team's other time zones, the date and ISO week, the current
+weather and whether precipitation is coming. It runs in Firefox on a Raspberry Pi screen.
 
 ![The dashboard](docs/screenshot.png)
 
@@ -12,8 +12,13 @@ current weather. It runs in Firefox on a Raspberry Pi screen.
 - Date and ISO week, in Europe/Amsterdam
 - Amsterdam time, large, with seconds
 - Kolkata, New York and UTC, each with its zone abbreviation and UTC offset
-- The current weather in Veghel: condition, temperature and wind, refreshed every 5 minutes. If refreshing fails, the
-  last reading stays and is dimmed once it is more than 30 minutes old.
+- The current weather: condition, temperature and wind, measured at Buienradar's Volkel station (Eindhoven when Volkel
+  has no reading)
+- Precipitation in Veghel in the next hour, from Buienradar's radar forecast: "Precipitation expected at 13:15",
+  "Precipitation expected to stop at 13:20", "This rain never stops" or "No precipitation expected". Below 0.1 mm/h
+  counts as dry.
+- Weather and precipitation are refreshed every 5 minutes. If refreshing fails, the last reading stays and is dimmed
+  once it is more than 30 minutes old.
 - A gong at :55 every hour from 09:55 to 21:55, Amsterdam time
 
 **`/clock`**: just the date and a full-screen Amsterdam clock.
@@ -22,10 +27,16 @@ The browser has to allow autoplay for the dashboard's address, or the gong stays
 
 ## Configuration
 
-- `src/config.ts`: the home time zone, the other clocks, the weather location and the gong times
-- `WEATHER_API_KEY`: the [weatherapi.com](https://www.weatherapi.com/) API key, read from the environment by the server
-  route `/api/weather` on each request. It never reaches the browser. Without it, `/api/weather` returns
-  `500 {"error": "WEATHER_API_KEY is not set"}` and the weather bar stays empty.
+`src/config.ts`: the home time zone, the other clocks, the weather stations, the precipitation location and the gong
+times. Nothing else: no API keys or environment variables.
+
+## Data source
+
+Weather and precipitation data come from [Buienradar.nl](https://www.buienradar.nl), through the server routes
+`/api/weather` (the [JSON feed](https://data.buienradar.nl/2.0/feed/json)) and `/api/precipitation`
+(`https://gps.buienradar.nl/getrr.php`). Buienradar allows free use for non-commercial purposes on condition that the
+source is credited, which the "Buienradar.nl" label on the weather bar does
+([terms](https://www.buienradar.nl/overbuienradar/gratis-weerdata)).
 
 ## Development
 
@@ -33,8 +44,7 @@ Needs Node.js 24 (see `.nvmrc`).
 
 ```sh
 npm ci
-cp .env.example .env.local    # then fill in WEATHER_API_KEY
-npm run dev                   # http://localhost:3000
+npm run dev    # http://localhost:3000
 ```
 
 | Script                                    | What it does         |
@@ -59,10 +69,8 @@ runs as a non-root user (uid 1000) on port 3000.
 
 ```sh
 docker build -t mini-dashboard .
-docker run -p 3000:3000 -e WEATHER_API_KEY=<key> mini-dashboard
+docker run -p 3000:3000 mini-dashboard
 ```
-
-`.env*` files are excluded from the build context, so the key is never baked into the image; pass it at runtime.
 
 `GET /healthz/live` returns `200 ok` for liveness and readiness probes.
 
@@ -72,6 +80,5 @@ CI builds the image on every pull request and scans it with Trivy (it fails on c
 fix). Every push to `main` publishes that scanned image as `ghcr.io/fdaniel02/mini-dashboard`, tagged `latest` and
 `sha-<commit>`.
 
-The dashboard is moving from Docker on srv-02 to the k3s homelab cluster, deployed by Argo CD from
-[cluster-gitops](https://github.com/fdaniel02/cluster-gitops), with the image on GHCR and the API key in a sealed
-secret.
+It runs in the k3s homelab cluster at https://mini-dashboard.home.robospace.uk, deployed by Argo CD from
+[cluster-gitops](https://github.com/fdaniel02/cluster-gitops). Renovate commits each new image digest there.
