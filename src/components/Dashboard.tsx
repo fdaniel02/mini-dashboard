@@ -6,6 +6,7 @@ import { useNow } from "@/lib/useNow";
 import DateBar from "./DateBar";
 import Gong from "./Gong";
 import MainClock from "./MainClock";
+import SprintPanel from "./SprintPanel";
 import WeatherBar from "./WeatherBar";
 import ZoneClock from "./ZoneClock";
 
@@ -32,7 +33,9 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-                <div className="w-3/12" />
+                <div className="w-3/12">
+                    <SprintPanel now={now} timeZone={HOME_TIME_ZONE} />
+                </div>
             </div>
             <div className="flex justify-end">
                 <Image src="/cat.png" alt="cat" width={165} height={116} className="-mt-28" />
