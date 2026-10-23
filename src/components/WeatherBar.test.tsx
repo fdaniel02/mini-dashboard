@@ -69,6 +69,15 @@ test("shows the weather, the indoor reading and the source", async () => {
     expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });
 
+test("always shows Buienradar's values with one decimal", async () => {
+    respond("/api/weather", ok({ ...weather, temperatureC: 11, windKph: 24 }));
+    render(<WeatherBar />);
+    await advance(0);
+
+    expect(screen.getByText("11.0 °C")).toBeDefined();
+    expect(screen.getByText("24.0 km/h")).toBeDefined();
+});
+
 test("keeps the bar to the readings and the mute button, with the credit floating above its right end", async () => {
     render(<WeatherBar />);
     await advance(0);
@@ -76,6 +85,7 @@ test("keeps the bar to the readings and the mute button, with the credit floatin
     const muteButton = screen.getByRole("button", { name: "Mute the gong" });
 
     expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(indoorGroup);
+    expect(indoorGroup.className).toContain("text-2xl");
     expect(indoorGroup.nextElementSibling).toBe(muteButton);
     expect(muteButton.className).toContain("ml-auto");
     const credit = screen.getByRole("link", { name: "Buienradar.nl" });

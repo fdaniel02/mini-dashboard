@@ -1,3 +1,4 @@
+import { formatOneDecimal } from "@/lib/format";
 import { useNow } from "@/lib/useNow";
 import { dimmedWhenStale, usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
@@ -20,12 +21,12 @@ export default function WeatherBar() {
                         className="mr-2 ml-1 size-9"
                     />
                     <ThermometerIcon className="mr-1 size-6" />
-                    <p className="mr-5 text-2xl">{weather.data.temperatureC} °C</p>
+                    <p className="mr-5 text-2xl">{formatOneDecimal(weather.data.temperatureC)} °C</p>
                     <WindIcon className="mr-1 size-6" />
-                    <p className="text-2xl">{weather.data.windKph} km/h</p>
+                    <p className="text-2xl">{formatOneDecimal(weather.data.windKph)} km/h</p>
                 </div>
             )}
-            <HomeSensor sensor="indoor" className="ml-8" />
+            <HomeSensor sensor="indoor" className="ml-8 text-2xl" />
             <MuteButton />
             <a
                 href="https://www.buienradar.nl"

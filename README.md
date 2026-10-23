@@ -20,14 +20,16 @@ weather and the indoor temperature and humidity. It runs in Firefox on a Raspber
 - A gong at :55 every hour from 09:55 to 21:55, Amsterdam time. The speaker button at the right end of the weather bar
   mutes it until it's tapped again (which plays the gong); the state is kept in the browser's `localStorage`.
 
-**`/clock`**: just the date and a full-screen Amsterdam clock.
+**`/clock`**: the date, a full-screen Amsterdam clock and, below it, the attic temperature and humidity from Home
+Assistant, large enough to read from a distance.
 
 The browser has to allow autoplay for the dashboard's address, or the gong stays silent.
 
 ## Configuration
 
 `src/config.ts`: the home time zone, the other clocks, the weather stations, the gong times and the Home Assistant
-sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`).
+sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`; `indoor` on the weather bar,
+`attic` on `/clock`).
 
 Environment variables, all optional (see `.env.example`):
 

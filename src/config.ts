@@ -11,6 +11,10 @@ export const HOME_SENSORS = {
         temperature: "sensor.sonoff_snzb_02d_temperature",
         humidity: "sensor.sonoff_snzb_02d_humidity",
     },
+    attic: {
+        temperature: "sensor.sonoff_snzb_02d_temperature_2",
+        humidity: "sensor.sonoff_snzb_02d_humidity_2",
+    },
 } satisfies Record<string, { temperature: string; humidity: string }>;
 
 export type HomeSensorName = keyof typeof HOME_SENSORS;

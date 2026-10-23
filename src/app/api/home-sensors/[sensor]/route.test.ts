@@ -45,6 +45,18 @@ test("returns the sensor's temperature and humidity", async () => {
     expect(headers.get("Authorization")).toBe("Bearer test-token");
 });
 
+test("reads the attic sensor's own entities", async () => {
+    answer({
+        "http://homeassistant.lan:8123/api/states/sensor.sonoff_snzb_02d_temperature_2": async () => state("17.8"),
+        "http://homeassistant.lan:8123/api/states/sensor.sonoff_snzb_02d_humidity_2": async () => state("55.5"),
+    });
+
+    const response = await get("attic");
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ temperatureC: 17.8, humidityPercent: 55.5 });
+});
+
 test("answers 404 for a sensor that isn't configured", async () => {
     const response = await get("garage");
 
