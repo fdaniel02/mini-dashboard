@@ -18,7 +18,7 @@ const withParent = (sampled: boolean) =>
     });
 
 describe("traceSampler", () => {
-    test.each(["/api/weather", "/api/precipitation", "/", "/clock", "/api/weather?x=1"])(
+    test.each(["/api/weather", "/api/home-sensors/indoor", "/", "/clock", "/api/weather?x=1"])(
         "traces a request to %s",
         (path) => {
             expect(decide(SpanKind.SERVER, { "http.target": path })).toBe(SamplingDecision.RECORD_AND_SAMPLED);

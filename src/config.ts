@@ -5,8 +5,6 @@ export const WEATHER_STATIONS = [
     { id: 6370, name: "Eindhoven" },
 ];
 
-export const PRECIPITATION_LOCATION = { name: "Veghel", lat: 51.62, lon: 5.55 };
-
 // Home Assistant entity ids per sensor; each is served at /api/home-sensors/<name>.
 export const HOME_SENSORS = {
     indoor: {

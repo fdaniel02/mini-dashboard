@@ -1,17 +1,14 @@
-import { type PrecipitationForecast, precipitationLabel } from "@/lib/precipitation";
 import { useNow } from "@/lib/useNow";
 import { dimmedWhenStale, usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
 import HomeSensor from "./HomeSensor";
-import { RainIcon, ThermometerIcon, WindIcon } from "./icons";
+import { ThermometerIcon, WindIcon } from "./icons";
 import MuteButton from "./MuteButton";
 import WeatherIcon from "./WeatherIcon";
 
 export default function WeatherBar() {
     const weather = usePolled<Weather>("/api/weather");
-    const precipitation = usePolled<PrecipitationForecast>("/api/precipitation");
     const now = useNow();
-    const rainLabel = precipitation.data && precipitationLabel(precipitation.data);
 
     return (
         <div className="relative -mx-4 flex h-11 items-center bg-black">
@@ -26,12 +23,6 @@ export default function WeatherBar() {
                     <p className="mr-5 text-2xl">{weather.data.temperatureC} °C</p>
                     <WindIcon className="mr-1 size-6" />
                     <p className="text-2xl">{weather.data.windKph} km/h</p>
-                </div>
-            )}
-            {rainLabel && (
-                <div className={`ml-8 flex items-center ${dimmedWhenStale(now, precipitation.fetchedAt)}`}>
-                    <RainIcon className="mr-1 size-7" />
-                    <p className="text-2xl">{rainLabel}</p>
                 </div>
             )}
             <HomeSensor sensor="indoor" className="ml-8" />

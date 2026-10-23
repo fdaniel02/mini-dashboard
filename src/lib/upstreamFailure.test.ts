@@ -34,9 +34,9 @@ test("logs one JSON line with the route and the error", () => {
 });
 
 test("includes Buienradar's status when there is one", () => {
-    upstreamFailure("/api/precipitation", "Buienradar returned 503", 503);
+    upstreamFailure("/api/home-sensors/indoor", "Buienradar returned 503", 503);
 
-    expect(JSON.parse(logged[0])).toMatchObject({ route: "/api/precipitation", status: 503 });
+    expect(JSON.parse(logged[0])).toMatchObject({ route: "/api/home-sensors/indoor", status: 503 });
 });
 
 test("includes the trace id of the request being handled", () => {
