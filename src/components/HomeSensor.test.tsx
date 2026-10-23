@@ -35,6 +35,28 @@ test("shows the sensor's temperature and humidity", async () => {
     expect(screen.getByText("58.1 %")).toBeDefined();
 });
 
+test("takes its size from the text size it's given: icons and spacing are in em", async () => {
+    fetchMock.mockResolvedValue(Response.json({ temperatureC: 18.5, humidityPercent: 58.1 }));
+    render(<HomeSensor sensor="indoor" className="text-[5vw]" />);
+    await advance(0);
+
+    const group = screen.getByText("18.5 °C").parentElement!;
+    expect(group.className).toContain("text-[5vw]");
+    for (const icon of group.querySelectorAll("svg")) {
+        expect(icon.getAttribute("class")).toContain("size-[1em]");
+    }
+    expect(screen.getByText("18.5 °C").className).not.toMatch(/text-/);
+});
+
+test("always shows one decimal, so the width doesn't change with whole numbers", async () => {
+    fetchMock.mockResolvedValue(Response.json({ temperatureC: 18, humidityPercent: 58 }));
+    render(<HomeSensor sensor="indoor" />);
+    await advance(0);
+
+    expect(screen.getByText("18.0 °C")).toBeDefined();
+    expect(screen.getByText("58.0 %")).toBeDefined();
+});
+
 test("shows nothing when there is no reading", async () => {
     fetchMock.mockResolvedValue(Response.json({ error: "Home Assistant is not configured" }, { status: 503 }));
     const { container } = render(<HomeSensor sensor="indoor" />);

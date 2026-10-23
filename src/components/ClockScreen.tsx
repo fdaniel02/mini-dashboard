@@ -3,6 +3,7 @@
 import { HOME_TIME_ZONE } from "@/config";
 import { useNow } from "@/lib/useNow";
 import DateBar from "./DateBar";
+import HomeSensor from "./HomeSensor";
 import MainClock from "./MainClock";
 
 export default function ClockScreen() {
@@ -16,6 +17,9 @@ export default function ClockScreen() {
             <DateBar now={now} timeZone={HOME_TIME_ZONE} className="text-[50px]" />
             <div className="flex grow justify-center font-mono">
                 <MainClock now={now} timeZone={HOME_TIME_ZONE} className="text-[20vw]" />
+            </div>
+            <div className="flex justify-center pb-[4vw]">
+                <HomeSensor sensor="attic" className="font-mono text-[6vw]" />
             </div>
         </div>
     );
