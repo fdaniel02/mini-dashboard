@@ -1,7 +1,7 @@
 # Mini Dashboard
 
 A full-screen wall dashboard: the time in Amsterdam and the team's other time zones, the date and ISO week, the current
-weather and whether precipitation is coming. It runs in Firefox on a Raspberry Pi screen.
+weather and the indoor temperature and humidity. It runs in Firefox on a Raspberry Pi screen.
 
 ![The dashboard](docs/screenshot.png)
 
@@ -14,12 +14,9 @@ weather and whether precipitation is coming. It runs in Firefox on a Raspberry P
 - Kolkata, New York and UTC, each with its zone abbreviation and UTC offset
 - The current weather: condition, temperature and wind, measured at Buienradar's Volkel station (Eindhoven when Volkel
   has no reading)
-- Precipitation in Veghel in the next hour, from Buienradar's radar forecast: a rain icon with the time it starts
-  ("13:15") or, while it's raining, the time it stops ("until 13:20"). Nothing is shown when it stays dry, or when it
-  rains for the whole hour. Below 0.1 mm/h counts as dry.
-- The indoor temperature and humidity from Home Assistant, after the Buienradar credit
-- Weather, precipitation and the indoor reading are refreshed every 5 minutes. If refreshing fails, the last reading
-  stays and is dimmed once it is more than 30 minutes old.
+- The indoor temperature and humidity from Home Assistant
+- The weather and the indoor reading are refreshed every 5 minutes. If refreshing fails, the last reading stays and is
+  dimmed once it is more than 30 minutes old.
 - A gong at :55 every hour from 09:55 to 21:55, Amsterdam time. The speaker button at the right end of the weather bar
   mutes it until it's tapped again (which plays the gong); the state is kept in the browser's `localStorage`.
 
@@ -29,8 +26,8 @@ The browser has to allow autoplay for the dashboard's address, or the gong stays
 
 ## Configuration
 
-`src/config.ts`: the home time zone, the other clocks, the weather stations, the precipitation location, the gong times
-and the Home Assistant sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`).
+`src/config.ts`: the home time zone, the other clocks, the weather stations, the gong times and the Home Assistant
+sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`).
 
 Environment variables, all optional (see `.env.example`):
 
@@ -51,10 +48,9 @@ Environment variables, all optional (see `.env.example`):
 
 ## Data source
 
-Weather and precipitation data come from [Buienradar.nl](https://www.buienradar.nl), through the server routes
-`/api/weather` (the [JSON feed](https://data.buienradar.nl/2.0/feed/json)) and `/api/precipitation`
-(`https://gps.buienradar.nl/getrr.php`). Buienradar allows free use for non-commercial purposes on condition that the
-source is credited, which the "Buienradar.nl" label on the weather bar does
+The weather comes from [Buienradar.nl](https://www.buienradar.nl), through the server route `/api/weather` (the
+[JSON feed](https://data.buienradar.nl/2.0/feed/json)). Buienradar allows free use for non-commercial purposes on
+condition that the source is credited, which the "Buienradar.nl" label above the weather bar does
 ([terms](https://www.buienradar.nl/overbuienradar/gratis-weerdata)).
 
 ## Development

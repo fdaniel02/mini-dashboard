@@ -1,5 +1,5 @@
 // Paths of the Material Icons (Apache-2.0) ThermostatOutlined and AirOutlined, which the old dashboard used through MUI,
-// and of the Material Symbols (Apache-2.0) outlined "rainy", "volume_up", "volume_off", "home" and "humidity_percentage" icons.
+// and of the Material Symbols (Apache-2.0) outlined "volume_up", "volume_off", "home" and "humidity_percentage" icons.
 
 export function ThermometerIcon({ className }: Readonly<{ className?: string }>) {
     return (
@@ -13,14 +13,6 @@ export function WindIcon({ className }: Readonly<{ className?: string }>) {
     return (
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
             <path d="M14.5 17c0 1.65-1.35 3-3 3s-3-1.35-3-3h2c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1H2v-2h9.5c1.65 0 3 1.35 3 3zM19 6.5C19 4.57 17.43 3 15.5 3S12 4.57 12 6.5h2c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S16.33 8 15.5 8H2v2h13.5c1.93 0 3.5-1.57 3.5-3.5zm-.5 4.5H2v2h16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5v2c1.93 0 3.5-1.57 3.5-3.5S20.43 11 18.5 11z" />
-        </svg>
-    );
-}
-
-export function RainIcon({ className }: Readonly<{ className?: string }>) {
-    return (
-        <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className={className}>
-            <path d="M558-84q-15 8-30.5 2.5T504-102l-60-120q-8-15-2.5-30.5T462-276q15-8 30.5-2.5T516-258l60 120q8 15 2.5 30.5T558-84Zm240 0q-15 8-30.5 2.5T744-102l-60-120q-8-15-2.5-30.5T702-276q15-8 30.5-2.5T756-258l60 120q8 15 2.5 30.5T798-84Zm-480 0q-15 8-30.5 2.5T264-102l-60-120q-8-15-2.5-30.5T222-276q15-8 30.5-2.5T276-258l60 120q8 15 2.5 30.5T318-84Zm-18-236q-91 0-155.5-64.5T80-540q0-83 55-145t136-73q32-57 87.5-89.5T480-880q90 0 156.5 57.5T717-679q69 6 116 57t47 122q0 75-52.5 127.5T700-320H300Zm0-80h400q42 0 71-29t29-71q0-42-29-71t-71-29h-60v-40q0-66-47-113t-113-47q-48 0-87.5 26T333-704l-10 24h-25q-57 2-97.5 42.5T160-540q0 58 41 99t99 41Zm180-200Z" />
         </svg>
     );
 }
