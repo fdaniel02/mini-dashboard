@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import type { PrecipitationForecast } from "@/lib/precipitation";
-import { POLL_INTERVAL_MS } from "@/lib/usePolled";
+import { POLL_INTERVAL_MS, STALE_AFTER_MS } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
 import { WEATHER_ICON_PATHS } from "@/lib/weatherIconPaths";
-import WeatherBar, { WEATHER_STALE_AFTER_MS } from "./WeatherBar";
+import WeatherBar from "./WeatherBar";
 
 const weather: Weather = {
     temperatureC: 8.1,
@@ -29,7 +29,7 @@ const fetchMock = vi.fn<typeof fetch>((input) => {
     return reply();
 });
 
-function respond(url: "/api/weather" | "/api/precipitation", ...queue: Reply[]) {
+function respond(url: "/api/weather" | "/api/precipitation" | "/api/home-sensors/indoor", ...queue: Reply[]) {
     replies[url] = queue;
 }
 
@@ -41,6 +41,7 @@ beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
     respond("/api/weather", ok(weather));
     respond("/api/precipitation", ok(startsAt1315));
+    respond("/api/home-sensors/indoor", ok({ temperatureC: 18.5, humidityPercent: 58.1 }));
 });
 
 afterEach(() => {
@@ -70,20 +71,25 @@ test("shows the weather, the precipitation forecast and the source", async () =>
     expect(screen.getByRole("link", { name: "Buienradar.nl" }).getAttribute("href")).toBe("https://www.buienradar.nl");
 });
 
-test("puts the credit right after the last item, leaving the right side of the bar free", async () => {
+test("keeps the bar to the readings and the mute button, with the credit floating above its right end", async () => {
     respond("/api/precipitation", ok(startsAt1315), ok({ kind: "dry" }));
     render(<WeatherBar />);
     await advance(0);
-    const credit = screen.getByRole("link", { name: "Buienradar.nl" });
-
-    expect(screen.getByText("13:15").parentElement!.nextElementSibling).toBe(credit);
-    expect(credit.className).not.toContain("ml-auto");
+    const indoor = screen.getByText("18.5 °C").parentElement!;
     const muteButton = screen.getByRole("button", { name: "Mute the gong" });
-    expect(credit.nextElementSibling).toBe(muteButton);
+
+    expect(screen.getByText("13:15").parentElement!.nextElementSibling).toBe(indoor);
+    expect(indoor.nextElementSibling).toBe(muteButton);
     expect(muteButton.className).toContain("ml-auto");
+    const credit = screen.getByRole("link", { name: "Buienradar.nl" });
+    expect(credit.className).toContain("absolute");
+    expect(credit.className).toContain("bottom-full");
+    expect(credit.className).toContain("right-4");
+    expect(credit.className).toContain("w-[165px]");
+    expect(credit.className).toContain("z-10");
 
     await advance(POLL_INTERVAL_MS);
-    expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(credit);
+    expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(indoor);
 });
 
 test("credits the source even before any data has loaded", () => {
@@ -99,8 +105,18 @@ test("shows the forecast when the weather request fails", async () => {
     render(<WeatherBar />);
     await advance(0);
 
-    expect(screen.queryByText(/°C/)).toBeNull();
+    expect(screen.queryByText("8.1 °C")).toBeNull();
     expect(screen.getByText("13:15")).toBeDefined();
+});
+
+test("keeps Buienradar's readings when Home Assistant fails", async () => {
+    respond("/api/home-sensors/indoor", error);
+    render(<WeatherBar />);
+    await advance(0);
+
+    expect(screen.getByText("8.1 °C")).toBeDefined();
+    expect(screen.getByText("13:15")).toBeDefined();
+    expect(screen.queryByText("18.5 °C")).toBeNull();
 });
 
 test("shows the weather when the forecast request fails", async () => {
@@ -129,7 +145,7 @@ test.each([
     await advance(0);
 
     expect(screen.getByText("24.1 km/h").parentElement!.nextElementSibling).toBe(
-        screen.getByRole("link", { name: "Buienradar.nl" }),
+        screen.getByText("18.5 °C").parentElement,
     );
 });
 
@@ -159,7 +175,7 @@ test("keeps the last readings when refreshes fail, and dims each once it is stal
     expect(weatherGroup().className).not.toContain("opacity-40");
     expect(forecast().className).not.toContain("opacity-40");
 
-    await advance(WEATHER_STALE_AFTER_MS);
+    await advance(STALE_AFTER_MS);
     expect(weatherGroup().className).toContain("opacity-40");
     expect(forecast().className).toContain("opacity-40");
 });

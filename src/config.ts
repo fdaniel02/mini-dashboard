@@ -7,6 +7,16 @@ export const WEATHER_STATIONS = [
 
 export const PRECIPITATION_LOCATION = { name: "Veghel", lat: 51.62, lon: 5.55 };
 
+// Home Assistant entity ids per sensor; each is served at /api/home-sensors/<name>.
+export const HOME_SENSORS = {
+    indoor: {
+        temperature: "sensor.sonoff_snzb_02d_temperature",
+        humidity: "sensor.sonoff_snzb_02d_humidity",
+    },
+} satisfies Record<string, { temperature: string; humidity: string }>;
+
+export type HomeSensorName = keyof typeof HOME_SENSORS;
+
 export const GONG = { minute: 55, firstHour: 9, lastHour: 21 };
 
 export interface ZoneClockConfig {

@@ -1,5 +1,5 @@
 // Paths of the Material Icons (Apache-2.0) ThermostatOutlined and AirOutlined, which the old dashboard used through MUI,
-// and of the Material Symbols (Apache-2.0) outlined "rainy", "volume_up" and "volume_off" icons.
+// and of the Material Symbols (Apache-2.0) outlined "rainy", "volume_up", "volume_off", "home" and "humidity_percentage" icons.
 
 export function ThermometerIcon({ className }: Readonly<{ className?: string }>) {
     return (
@@ -37,6 +37,22 @@ export function VolumeOffIcon({ className }: Readonly<{ className?: string }>) {
     return (
         <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className={className}>
             <path d="M792-56 671-177q-25 16-53 27.5T560-131v-82q14-5 27.5-10t25.5-12L480-368v208L280-360H120v-240h128L56-792l56-56 736 736-56 56Zm-8-232-58-58q17-31 25.5-65t8.5-70q0-94-55-168T560-749v-82q124 28 202 125.5T840-481q0 53-14.5 102T784-288ZM650-422l-90-90v-130q47 22 73.5 66t26.5 96q0 15-2.5 29.5T650-422ZM480-592 376-696l104-104v208Zm-80 238v-94l-72-72H200v80h114l86 86Zm-36-130Z" />
+        </svg>
+    );
+}
+
+export function HomeIcon({ className }: Readonly<{ className?: string }>) {
+    return (
+        <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className={className}>
+            <path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
+        </svg>
+    );
+}
+
+export function HumidityIcon({ className }: Readonly<{ className?: string }>) {
+    return (
+        <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className={className}>
+            <path d="M580-240q25 0 42.5-17.5T640-300q0-25-17.5-42.5T580-360q-25 0-42.5 17.5T520-300q0 25 17.5 42.5T580-240Zm-202-2 260-260-56-56-260 260 56 56Zm2-198q25 0 42.5-17.5T440-500q0-25-17.5-42.5T380-560q-25 0-42.5 17.5T320-500q0 25 17.5 42.5T380-440ZM480-80q-137 0-228.5-94T160-408q0-100 79.5-217.5T480-880q161 137 240.5 254.5T800-408q0 140-91.5 234T480-80Zm0-80q104 0 172-70.5T720-408q0-73-60.5-165T480-774Q361-665 300.5-573T240-408q0 107 68 177.5T480-160Zm0-320Z" />
         </svg>
     );
 }

@@ -17,8 +17,9 @@ weather and whether precipitation is coming. It runs in Firefox on a Raspberry P
 - Precipitation in Veghel in the next hour, from Buienradar's radar forecast: a rain icon with the time it starts
   ("13:15") or, while it's raining, the time it stops ("until 13:20"). Nothing is shown when it stays dry, or when it
   rains for the whole hour. Below 0.1 mm/h counts as dry.
-- Weather and precipitation are refreshed every 5 minutes. If refreshing fails, the last reading stays and is dimmed
-  once it is more than 30 minutes old.
+- The indoor temperature and humidity from Home Assistant, after the Buienradar credit
+- Weather, precipitation and the indoor reading are refreshed every 5 minutes. If refreshing fails, the last reading
+  stays and is dimmed once it is more than 30 minutes old.
 - A gong at :55 every hour from 09:55 to 21:55, Amsterdam time. The speaker button at the right end of the weather bar
   mutes it until it's tapped again (which plays the gong); the state is kept in the browser's `localStorage`.
 
@@ -28,8 +29,14 @@ The browser has to allow autoplay for the dashboard's address, or the gong stays
 
 ## Configuration
 
-`src/config.ts`: the home time zone, the other clocks, the weather stations, the precipitation location and the gong
-times. No API keys. The only environment variable is the optional `OTEL_EXPORTER_OTLP_ENDPOINT` (see below).
+`src/config.ts`: the home time zone, the other clocks, the weather stations, the precipitation location, the gong times
+and the Home Assistant sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`).
+
+Environment variables, all optional (see `.env.example`):
+
+- `HOME_ASSISTANT_URL`, `HOME_ASSISTANT_TOKEN`: Home Assistant's address and a long-lived access token. The token stays
+  on the server. Without them, `/api/home-sensors/*` answers 503 and the indoor reading isn't shown.
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: see below.
 
 ## Observability
 
@@ -37,8 +44,8 @@ times. No API keys. The only environment variable is the optional `OTEL_EXPORTER
   [`@vercel/otel`](https://www.npmjs.com/package/@vercel/otel) (`src/instrumentation.ts`), as service `mini-dashboard`:
   one trace per request, with the Buienradar calls as child spans. `/healthz/live` isn't traced, and neither are
   Next.js' own spans outside a request (`src/lib/telemetry.ts`). Without the variable, nothing is sent.
-- **Logs:** when a Buienradar call fails, the route answers 502 and writes one JSON line to stderr, with the route, the
-  error, Buienradar's status if any and the `trace_id`.
+- **Logs:** when a Buienradar or Home Assistant call fails, the route answers 502 and writes one JSON line to stderr,
+  with the route, the error, the upstream status if any and the `trace_id`.
 - In the cluster, the endpoint is the k8s-monitoring Alloy collector, which forwards traces to Grafana Cloud; pod logs
   reach Grafana Cloud's Loki through the same chart.
 
@@ -56,7 +63,8 @@ Needs Node.js 24 (see `.nvmrc`).
 
 ```sh
 npm ci
-npm run dev    # http://localhost:3000
+cp .env.example .env.local    # optional: Home Assistant's URL and token
+npm run dev                   # http://localhost:3000
 ```
 
 | Script                                    | What it does         |

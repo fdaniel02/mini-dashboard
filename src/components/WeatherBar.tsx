@@ -1,12 +1,11 @@
 import { type PrecipitationForecast, precipitationLabel } from "@/lib/precipitation";
 import { useNow } from "@/lib/useNow";
-import { usePolled } from "@/lib/usePolled";
+import { dimmedWhenStale, usePolled } from "@/lib/usePolled";
 import type { Weather } from "@/lib/weather";
+import HomeSensor from "./HomeSensor";
 import { RainIcon, ThermometerIcon, WindIcon } from "./icons";
 import MuteButton from "./MuteButton";
 import WeatherIcon from "./WeatherIcon";
-
-export const WEATHER_STALE_AFTER_MS = 30 * 60_000;
 
 export default function WeatherBar() {
     const weather = usePolled<Weather>("/api/weather");
@@ -14,13 +13,10 @@ export default function WeatherBar() {
     const now = useNow();
     const rainLabel = precipitation.data && precipitationLabel(precipitation.data);
 
-    const dimmedWhenStale = (fetchedAt: number | null) =>
-        now !== null && fetchedAt !== null && now.getTime() - fetchedAt > WEATHER_STALE_AFTER_MS ? "opacity-40" : "";
-
     return (
-        <div className="-mx-4 flex h-11 items-center bg-black">
+        <div className="relative -mx-4 flex h-11 items-center bg-black">
             {weather.data && (
-                <div className={`flex items-center ${dimmedWhenStale(weather.fetchedAt)}`}>
+                <div className={`flex items-center ${dimmedWhenStale(now, weather.fetchedAt)}`}>
                     <WeatherIcon
                         code={weather.data.iconCode}
                         label={weather.data.condition}
@@ -33,15 +29,19 @@ export default function WeatherBar() {
                 </div>
             )}
             {rainLabel && (
-                <div className={`ml-8 flex items-center ${dimmedWhenStale(precipitation.fetchedAt)}`}>
+                <div className={`ml-8 flex items-center ${dimmedWhenStale(now, precipitation.fetchedAt)}`}>
                     <RainIcon className="mr-1 size-7" />
                     <p className="text-2xl">{rainLabel}</p>
                 </div>
             )}
-            <a href="https://www.buienradar.nl" className="mt-1 ml-1.5 self-start text-xs opacity-50">
+            <HomeSensor sensor="indoor" className="ml-8" />
+            <MuteButton />
+            <a
+                href="https://www.buienradar.nl"
+                className="absolute right-4 bottom-full z-10 mb-1 w-[165px] text-center text-xs opacity-50"
+            >
                 Buienradar.nl
             </a>
-            <MuteButton />
         </div>
     );
 }

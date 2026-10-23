@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
 export const POLL_INTERVAL_MS = 5 * 60_000;
+export const STALE_AFTER_MS = 30 * 60_000;
+
+export function dimmedWhenStale(now: Date | null, fetchedAt: number | null): string {
+    return now !== null && fetchedAt !== null && now.getTime() - fetchedAt > STALE_AFTER_MS ? "opacity-40" : "";
+}
 
 interface Polled<T> {
     data: T | null;

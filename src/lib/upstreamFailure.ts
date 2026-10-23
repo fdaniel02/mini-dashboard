@@ -1,11 +1,16 @@
 import { trace } from "@opentelemetry/api";
 
-export function upstreamFailure(route: string, error: string, upstreamStatus?: number): Response {
+export function upstreamFailure(
+    route: string,
+    error: string,
+    upstreamStatus?: number,
+    upstream = "Buienradar",
+): Response {
     const traceId = trace.getActiveSpan()?.spanContext().traceId;
     console.error(
         JSON.stringify({
             level: "error",
-            msg: "Buienradar request failed",
+            msg: `${upstream} request failed`,
             route,
             error,
             ...(upstreamStatus !== undefined && { status: upstreamStatus }),
