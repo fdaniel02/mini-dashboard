@@ -12,6 +12,8 @@ weather and the indoor temperature and humidity. It runs in Firefox on a Raspber
 - Date and ISO week, in Europe/Amsterdam
 - Amsterdam time, large, with seconds
 - Kolkata, New York and UTC, each with its zone abbreviation and UTC offset
+- The sprint, top right: `S-YYNN`, with `NN` = ceil(ISO week / 2) - 1 and `YY` the ISO week-year (so week 1-2 is sprint
+  00, and week 53 a sprint of its own), and "First week" or "Last week" (odd or even ISO week), in Amsterdam time
 - The current weather: condition, temperature and wind, measured at Buienradar's Volkel station (Eindhoven when Volkel
   has no reading)
 - The indoor temperature and humidity from Home Assistant

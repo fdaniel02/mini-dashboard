@@ -36,6 +36,8 @@ test("shows the date bar and all clocks", () => {
     expect(screen.getByText("(+00:00)")).toBeDefined();
 
     expect(screen.getByAltText("cat")).toBeDefined();
+    expect(screen.getByText("S-2621")).toBeDefined();
+    expect(screen.getByText("First week")).toBeDefined();
 });
 
 test("ticks every second", () => {

@@ -42,13 +42,21 @@ export function formatTime(date: Date, timeZone: string, { seconds = false } = {
     return seconds ? `${hour}:${minute}:${second}` : `${hour}:${minute}`;
 }
 
-export function isoWeek(date: Date, timeZone: string): number {
+// The ISO week-year differs from the calendar year around New Year: 2027-01-01 is in week 53 of 2026.
+export function isoWeekDate(date: Date, timeZone: string): { year: number; week: number } {
     const { year, month, day } = zonedDateTime(date, timeZone);
     const thursday = new Date(Date.UTC(year, month - 1, day));
     const isoWeekday = thursday.getUTCDay() || 7;
     thursday.setUTCDate(thursday.getUTCDate() + 4 - isoWeekday);
     const yearStart = Date.UTC(thursday.getUTCFullYear(), 0, 1);
-    return Math.ceil(((thursday.getTime() - yearStart) / 86_400_000 + 1) / 7);
+    return {
+        year: thursday.getUTCFullYear(),
+        week: Math.ceil(((thursday.getTime() - yearStart) / 86_400_000 + 1) / 7),
+    };
+}
+
+export function isoWeek(date: Date, timeZone: string): number {
+    return isoWeekDate(date, timeZone).week;
 }
 
 export function formatIsoWeek(date: Date, timeZone: string): string {

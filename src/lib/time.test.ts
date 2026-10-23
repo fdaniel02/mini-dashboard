@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { formatDate, formatIsoWeek, formatTime, isoWeek, utcOffset, zoneAbbreviation } from "./time";
+import { formatDate, formatIsoWeek, formatTime, isoWeek, isoWeekDate, utcOffset, zoneAbbreviation } from "./time";
 
 const AMSTERDAM = "Europe/Amsterdam";
 const NEW_YORK = "America/New_York";
@@ -17,6 +17,16 @@ describe("formatDate", () => {
         const lateEvening = at("2026-10-22T22:30:00Z");
         expect(formatDate(lateEvening, AMSTERDAM)).toBe("2026-10-23, Friday");
         expect(formatDate(lateEvening, UTC)).toBe("2026-10-22, Thursday");
+    });
+});
+
+describe("isoWeekDate", () => {
+    test.each([
+        ["2026-10-22T10:00:00Z", 2026, 43],
+        ["2027-01-01T12:00:00Z", 2026, 53],
+        ["2024-12-30T12:00:00Z", 2025, 1],
+    ])("%s is week %i of %i", (iso, year, week) => {
+        expect(isoWeekDate(new Date(iso), "Europe/Amsterdam")).toEqual({ year, week });
     });
 });
 
