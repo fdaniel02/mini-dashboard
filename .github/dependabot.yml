@@ -17,6 +17,15 @@ updates:
       - dependency-name: "next"
         update-types: ["version-update:semver-major"]
 
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    ignore:
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
