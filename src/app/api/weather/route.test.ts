@@ -109,3 +109,23 @@ test("fails with 502 when Buienradar can't be reached", async () => {
     expect(errorLog).toHaveBeenCalledTimes(1);
     expect(await response.json()).toEqual({ error: "Buienradar could not be reached" });
 });
+
+test("gives up on Buienradar after 10 seconds", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    fetchMock.mockResolvedValue(feed(volkel));
+
+    await GET();
+
+    expect(timeout).toHaveBeenCalledWith(10_000);
+    expect(fetchMock.mock.calls[0][1]?.signal).toBe(timeout.mock.results[0].value);
+});
+
+test("fails with 502 when Buienradar times out", async () => {
+    fetchMock.mockRejectedValue(new DOMException("The operation was aborted due to timeout", "TimeoutError"));
+
+    const response = await GET();
+
+    expect(response.status).toBe(502);
+    expect(errorLog).toHaveBeenCalledTimes(1);
+    expect(await response.json()).toEqual({ error: "Buienradar could not be reached" });
+});
