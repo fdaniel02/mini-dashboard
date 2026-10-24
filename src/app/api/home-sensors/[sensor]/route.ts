@@ -7,7 +7,7 @@ const HOME_ASSISTANT = "Home Assistant";
 const TIMEOUT_MS = 10_000;
 
 export async function GET(_request: Request, { params }: RouteContext<"/api/home-sensors/[sensor]">) {
-    // Request-time only, like the Buienradar routes.
+    // Request-time only, like the weather route.
     await connection();
 
     const { sensor } = await params;
@@ -23,6 +23,8 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/home
     }
 
     const route = `/api/home-sensors/${sensor}`;
+    const fail = (error: string, status?: number) =>
+        upstreamFailure({ upstream: HOME_ASSISTANT, route, error, status });
     const fetchState = (entityId: string) =>
         fetch(new URL(`/api/states/${entityId}`, baseUrl), {
             headers: { Authorization: `Bearer ${token}` },
@@ -34,18 +36,18 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/home
     try {
         responses = await Promise.all([fetchState(entities.temperature), fetchState(entities.humidity)]);
     } catch {
-        return upstreamFailure(route, "Home Assistant could not be reached", undefined, HOME_ASSISTANT);
+        return fail("Home Assistant could not be reached");
     }
     const failed = responses.find((response) => !response.ok);
     if (failed) {
-        return upstreamFailure(route, `Home Assistant returned ${failed.status}`, failed.status, HOME_ASSISTANT);
+        return fail(`Home Assistant returned ${failed.status}`, failed.status);
     }
 
     const [temperatureC, humidityPercent] = await Promise.all(
         responses.map((response) => response.json().then(parseSensorState, () => null)),
     );
     if (temperatureC === null || humidityPercent === null) {
-        return upstreamFailure(route, "Unusable sensor state from Home Assistant", undefined, HOME_ASSISTANT);
+        return fail("Unusable sensor state from Home Assistant");
     }
     return Response.json({ temperatureC, humidityPercent });
 }

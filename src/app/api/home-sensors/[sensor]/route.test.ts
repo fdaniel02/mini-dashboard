@@ -96,6 +96,31 @@ test("fails with 502 when Home Assistant can't be reached", async () => {
     });
 });
 
+test("gives up on Home Assistant after 10 seconds", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    answer({ [TEMPERATURE]: async () => state("18.5"), [HUMIDITY]: async () => state("58.1") });
+
+    await get("indoor");
+
+    expect(timeout).toHaveBeenCalledTimes(2);
+    expect(timeout).toHaveBeenCalledWith(10_000);
+    const signals = timeout.mock.results.map((result) => result.value);
+    expect(fetchMock.mock.calls.map(([, init]) => init?.signal)).toEqual(signals);
+});
+
+test("fails with 502 when Home Assistant times out", async () => {
+    answer({
+        [TEMPERATURE]: async () => state("18.5"),
+        [HUMIDITY]: () => Promise.reject(new DOMException("The operation was aborted due to timeout", "TimeoutError")),
+    });
+
+    const response = await get("indoor");
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "Home Assistant could not be reached" });
+    expect(errorLog).toHaveBeenCalledTimes(1);
+});
+
 test("fails with 502 when Home Assistant returns an error", async () => {
     answer({
         [TEMPERATURE]: async () => state("18.5"),
