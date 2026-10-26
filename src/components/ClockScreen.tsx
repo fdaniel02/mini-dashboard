@@ -15,11 +15,11 @@ export default function ClockScreen() {
     return (
         <div className="flex grow flex-col justify-center font-bold">
             <DateBar now={now} timeZone={HOME_TIME_ZONE} className="text-[50px]" />
-            <div className="flex grow justify-center font-mono">
+            <div className="flex grow justify-center font-display tabular-nums">
                 <MainClock now={now} timeZone={HOME_TIME_ZONE} className="text-[20vw]" />
             </div>
             <div className="flex justify-center pb-[4vw]">
-                <HomeSensor sensor="attic" className="font-mono text-[6vw]" />
+                <HomeSensor sensor="attic" className="font-display text-[6vw] tabular-nums" />
             </div>
         </div>
     );

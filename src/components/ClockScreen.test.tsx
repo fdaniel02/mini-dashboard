@@ -42,7 +42,7 @@ test("shows the attic's temperature and humidity, large and in the clock's font"
     const reading = screen.getByText("17.8 °C").parentElement!;
     expect(screen.getByText("55.5 %").parentElement).toBe(reading);
     expect(reading.className).toContain("text-[6vw]");
-    expect(reading.className).toContain("font-mono");
+    expect(reading.className).toContain("font-display");
 });
 
 test("keeps the clock when Home Assistant has no reading", async () => {
