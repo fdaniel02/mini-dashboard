@@ -14,6 +14,8 @@ weather and the indoor temperature and humidity. It runs in Firefox on a Raspber
 - Kolkata, New York and UTC, each with its zone abbreviation and UTC offset
 - The sprint, top right: `S-YYNN`, with `NN` = ceil(ISO week / 2) - 1 and `YY` the ISO week-year (so week 1-2 is sprint
   00, and week 53 a sprint of its own), and "First week" or "Last week" (odd or even ISO week), in Amsterdam time
+- Below it, the PI and its sprint (`PI14.5`) from the PI calendar, and the working days (Monday to Friday) left in that
+  sprint including today, or "last day" on its last day. Outside the calendar it shows "Please update the PI calendar!"
 - The current weather: condition, temperature and wind, measured at Buienradar's Volkel station (Eindhoven when Volkel
   has no reading)
 - The indoor temperature and humidity from Home Assistant
@@ -32,6 +34,10 @@ The browser has to allow autoplay for the dashboard's address, or the gong stays
 `src/config.ts`: the home time zone, the other clocks, the weather stations, the gong times and the Home Assistant
 sensors (`HOME_SENSORS`: entity ids per sensor, each served at `/api/home-sensors/<name>`; `indoor` on the weather bar,
 `attic` on `/clock`).
+
+`PI_CALENDAR` in `src/config.ts`: the Wednesday the first PI starts and the number of sprints per PI. PIs run back to
+back in 14-day sprints (Wednesday to Tuesday), so when a PI gets an extra sprint, change its count and every later PI
+moves with it; add new PIs when the calendar is published.
 
 Environment variables, all optional (see `.env.example`):
 

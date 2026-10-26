@@ -19,6 +19,17 @@ export const HOME_SENSORS = {
 
 export type HomeSensorName = keyof typeof HOME_SENSORS;
 
+export interface PiCalendar {
+    firstStart: string;
+    sprints: Record<number, number>;
+}
+
+// PIs run back to back from firstStart in 14-day sprints, so changing one PI's sprint count moves every later PI.
+export const PI_CALENDAR: PiCalendar = {
+    firstStart: "2026-08-26",
+    sprints: { 14: 5, 15: 6, 16: 5, 17: 5, 18: 5, 19: 5, 20: 6, 21: 5 },
+};
+
 export const GONG = { minute: 55, firstHour: 9, lastHour: 21 };
 
 export interface ZoneClockConfig {
