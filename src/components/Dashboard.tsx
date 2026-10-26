@@ -21,7 +21,7 @@ export default function Dashboard() {
             <Gong now={now} timeZone={HOME_TIME_ZONE} />
             <DateBar now={now} timeZone={HOME_TIME_ZONE} />
             <div className="mb-auto flex justify-between">
-                <div className="grow font-mono">
+                <div className="grow font-display tabular-nums">
                     <div className="-mt-2 -mb-3">
                         <MainClock now={now} timeZone={HOME_TIME_ZONE} className="text-[15vw]" />
                     </div>
